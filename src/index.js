@@ -2,9 +2,13 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
+const winningStyle = {
+  color: "green"
+};
+
 function Square(props) {
   return (
-    <button className="square" onClick={props.onClick}>
+    <button className="square" onClick={props.onClick} style={props.style}>
       {props.value}
     </button>
   );
@@ -12,6 +16,17 @@ function Square(props) {
 
 class Board extends React.Component {
   renderSquare(i) {
+    if(this.props.winningSquares){
+      if(this.props.winningSquares.includes(i))
+      return (
+        <Square
+          value={this.props.squares[i]}
+          style = {winningStyle}
+          onClick={() => this.props.onClick(i)}
+        />
+      )
+    }
+    
     return (
       <Square
         value={this.props.squares[i]}
@@ -82,7 +97,7 @@ class Game extends React.Component {
   render() {
     const history = this.state.history;
     const current = history[this.state.stepNumber];
-    const winner = calculateWinner(current.squares);
+    const winningSquares = calculateWinner(current.squares);
 
     const moves = history.map((step, move) => {
       const desc = move ?
@@ -96,8 +111,8 @@ class Game extends React.Component {
     });
 
     let status;
-    if (winner) {
-      status = 'Winner: ' + winner;
+    if (winningSquares) {
+      status = 'Winner: ' + current.squares[winningSquares[0]];
     } else {
       status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
     }
@@ -105,7 +120,7 @@ class Game extends React.Component {
     return (
       <div className="game">
         <div className="game-board">
-          <Board
+          <Board winningSquares = {winningSquares}
             squares={current.squares}
             onClick={(i) => this.handleClick(i)}
           />
@@ -140,7 +155,7 @@ function calculateWinner(squares) {
   for (let i = 0; i < lines.length; i++) {
     const [a, b, c] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
+      return [a, b, c];
     }
   }
   return null;
